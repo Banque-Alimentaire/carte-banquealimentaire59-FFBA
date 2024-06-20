@@ -51,7 +51,7 @@
         <script>
         var map = L.map('map', {
             zoomControl:true, maxZoom:28, minZoom:1
-        }).fitBounds([[50.06994203162149,1.89819032944486],[51.07916336194,4.807688971156591]]);
+        }).fitBounds([[50.06994203162149,1.9351238109138116],[51.07916336194,4.7707554896876365]]);
         var hash = new L.Hash(map);
         map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
         var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
@@ -125,7 +125,7 @@
         function pop_EPCINord_2(feature, layer) {
             var popupContent = '<table>\
                     <tr>\
-                        <td class="visible-with-data" id="POPULATION"colspan="2"><strong>Ppopulation</strong><br />' + (feature.properties['POPULATION'] !== null ? autolinker.link(feature.properties['POPULATION'].toLocaleString()) : '') + '</td>\
+                        <td class="visible-with-data" id="POPULATION"colspan="2"><strong>Population</strong><br />' + (feature.properties['POPULATION'] !== null ? autolinker.link(feature.properties['POPULATION'].toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
                         <td class="visible-with-data" id="SOCIALE"colspan="2"><strong>EPCI</strong><br />' + (feature.properties['SOCIALE'] !== null ? autolinker.link(feature.properties['SOCIALE'].toLocaleString()) : '') + '</td>\
@@ -332,7 +332,7 @@
         function pop_Indicecontrainteconomique_5(feature, layer) {
             var popupContent = '<table>\
                     <tr>\
-                        <td class="visible-with-data" id="Libellé"colspan="2"><strong>Ciommune</strong><br />' + (feature.properties['Libellé'] !== null ? autolinker.link(feature.properties['Libellé'].toLocaleString()) : '') + '</td>\
+                        <td class="visible-with-data" id="Libellé"colspan="2"><strong>Commune</strong><br />' + (feature.properties['Libellé'] !== null ? autolinker.link(feature.properties['Libellé'].toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
                         <td class="visible-with-data" id="Population"colspan="2"><strong>Population</strong><br />' + (feature.properties['Population'] !== null ? autolinker.link(feature.properties['Population'].toLocaleString()) : '') + '</td>\
@@ -462,7 +462,7 @@
                         <td class="visible-with-data" id="Population"colspan="2"><strong>Population</strong><br />' + (feature.properties['Population'] !== null ? autolinker.link(feature.properties['Population'].toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
-                        <td class="visible-with-data" id="jenks_cut_"colspan="2"><strong>Indice de risque (natioanal)</strong><br />' + (feature.properties['jenks_cut_'] !== null ? autolinker.link(feature.properties['jenks_cut_'].toLocaleString()) : '') + '</td>\
+                        <td class="visible-with-data" id="jenks_cut_"colspan="2"><strong>Indice de risque (national)</strong><br />' + (feature.properties['jenks_cut_'] !== null ? autolinker.link(feature.properties['jenks_cut_'].toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
                         <td class="visible-with-data" id="jenks_cu_1"colspan="2"><strong>Indice de risque (départemental)</strong><br />' + (feature.properties['jenks_cu_1'] !== null ? autolinker.link(feature.properties['jenks_cu_1'].toLocaleString()) : '') + '</td>\
@@ -1121,7 +1121,7 @@
                         <td class="visible-with-data" id="Email"colspan="2"><strong>Email</strong><br />' + (feature.properties['Email'] !== null ? autolinker.link(feature.properties['Email'].toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
-                        <td class="visible-with-data" id="adresse1"colspan="2"><strong>adresse1</strong><br />' + (feature.properties['adresse1'] !== null ? autolinker.link(feature.properties['adresse1'].toLocaleString()) : '') + '</td>\
+                        <td class="visible-with-data" id="adresse1"colspan="2"><strong>Adresse</strong><br />' + (feature.properties['adresse1'] !== null ? autolinker.link(feature.properties['adresse1'].toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
                         <td colspan="2">' + (feature.properties['adresse2'] !== null ? autolinker.link(feature.properties['adresse2'].toLocaleString()) : '') + '</td>\
@@ -1130,7 +1130,7 @@
                         <td colspan="2">' + (feature.properties['CP'] !== null ? autolinker.link(feature.properties['CP'].toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
-                        <td class="visible-with-data" id="ville"colspan="2"><strong>ville</strong><br />' + (feature.properties['ville'] !== null ? autolinker.link(feature.properties['ville'].toLocaleString()) : '') + '</td>\
+                        <td class="visible-with-data" id="ville"colspan="2"><strong>Ville</strong><br />' + (feature.properties['ville'] !== null ? autolinker.link(feature.properties['ville'].toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
                         <td class="visible-with-data" id="Tél"colspan="2"><strong>Tél</strong><br />' + (feature.properties['Tél'] !== null ? autolinker.link(feature.properties['Tél'].toLocaleString()) : '') + '</td>\
