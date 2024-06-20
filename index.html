@@ -10,6 +10,7 @@
         <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
         <link rel="stylesheet" href="css/qgis2web.css">
         <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-search.css">
         <style>
         html, body, #map {
             width: 100%;
@@ -34,6 +35,7 @@
         <script src="js/rbush.min.js"></script>
         <script src="js/labelgun.min.js"></script>
         <script src="js/labels.js"></script>
+        <script src="js/leaflet-search.js"></script>
         <script src="data/Nord_1.js"></script>
         <script src="data/EPCINord_2.js"></script>
         <script src="data/CommunesNord_3.js"></script>
@@ -153,7 +155,7 @@
                 fill: true,
                 fillOpacity: 1,
                 fillColor: 'rgba(196,60,57,0.0)',
-                interactive: true,
+                interactive: false,
             }
         }
         map.createPane('pane_EPCINord_2');
@@ -161,7 +163,7 @@
         map.getPane('pane_EPCINord_2').style['mix-blend-mode'] = 'normal';
         var layer_EPCINord_2 = new L.geoJson(json_EPCINord_2, {
             attribution: '',
-            interactive: true,
+            interactive: false,
             dataVar: 'json_EPCINord_2',
             layerName: 'layer_EPCINord_2',
             pane: 'pane_EPCINord_2',
@@ -1213,6 +1215,13 @@
         });
         lay.addTo(map);
         setBounds();
+        map.addControl(new L.Control.Search({
+            layer: layer_Associationspartenaires_12,
+            initial: false,
+            hideMarkerOnCollapse: true,
+            propertyName: 'associatio'}));
+        document.getElementsByClassName('search-button')[0].className +=
+         ' fa fa-binoculars';
         resetLabels([layer_BanquesAlimentaires_14]);
         map.on("zoomend", function(){
             resetLabels([layer_BanquesAlimentaires_14]);
