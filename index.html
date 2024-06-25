@@ -10,7 +10,6 @@
         <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
         <link rel="stylesheet" href="css/qgis2web.css">
         <link rel="stylesheet" href="css/fontawesome-all.min.css">
-        <link rel="stylesheet" href="css/leaflet-search.css">
         <style>
         html, body, #map {
             width: 100%;
@@ -35,7 +34,6 @@
         <script src="js/rbush.min.js"></script>
         <script src="js/labelgun.min.js"></script>
         <script src="js/labels.js"></script>
-        <script src="js/leaflet-search.js"></script>
         <script src="data/Nord_1.js"></script>
         <script src="data/EPCINord_2.js"></script>
         <script src="data/CommunesNord_3.js"></script>
@@ -45,18 +43,22 @@
         <script src="data/Tauxdepauvret2020_7.js"></script>
         <script src="data/QPVNord_8.js"></script>
         <script src="data/Tonnagedesassociationspartenaires_9.js"></script>
-        <script src="data/RestosduCoeur_10.js"></script>
+        <script src="data/ESAndes_10.js"></script>
         <script src="data/Autresassociationsaidealimentaire_11.js"></script>
-        <script src="data/Associationspartenaires_12.js"></script>
-        <script src="data/Antennes_13.js"></script>
-        <script src="data/BanquesAlimentaires_14.js"></script>
+        <script src="data/RestosduCoeur_12.js"></script>
+        <script src="data/SecoursPopulaire_13.js"></script>
+        <script src="data/CroixRougeNord_14.js"></script>
+        <script src="data/Associationspartenaires_15.js"></script>
+        <script src="data/Antennes_16.js"></script>
+        <script src="data/BanquesAlimentaires_17.js"></script>
         <script>
         var map = L.map('map', {
-            zoomControl:true, maxZoom:28, minZoom:1
-        }).fitBounds([[50.06994203162149,1.9351238109138116],[51.07916336194,4.7707554896876365]]);
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[49.96818472251019,2.1993881376128797],[51.05904113107347,5.260459230548229]]);
         var hash = new L.Hash(map);
         map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
         var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
         function removeEmptyRowsFromPopupContent(content, feature) {
          var tempDiv = document.createElement('div');
          tempDiv.innerHTML = content;
@@ -70,15 +72,23 @@
          }
          return tempDiv.innerHTML;
         }
-        document.querySelector(".leaflet-popup-pane").addEventListener("load", function(event) {
-          var tagName = event.target.tagName,
-            popup = map._popup;
-          // Also check if flag is already set.
-          if (tagName === "IMG" && popup && !popup._updated) {
-            popup._updated = true; // Set flag to prevent looping.
-            popup.update();
-          }
-        }, true);
+        // add class to format popup if it contains media
+		function addClassToPopupIfMedia(content, popup) {
+			var tempDiv = document.createElement('div');
+			tempDiv.innerHTML = content;
+			if (tempDiv.querySelector('td img')) {
+				popup._contentNode.classList.add('media');
+					// Delay to force the redraw
+					setTimeout(function() {
+						popup.update();
+					}, 10);
+			} else {
+				popup._contentNode.classList.remove('media');
+			}
+		}
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
         var bounds_group = new L.featureGroup([]);
         function setBounds() {
         }
@@ -136,11 +146,11 @@
                         <td class="visible-with-data" id="Taux de pauvreté (seuil à 60% du revenu médian) 2020"colspan="2"><strong>Taux de pauvreté (2020)</strong><br />' + (feature.properties['Taux de pauvreté (seuil à 60% du revenu médian) 2020'] !== null ? autolinker.link(feature.properties['Taux de pauvreté (seuil à 60% du revenu médian) 2020'].toLocaleString()) : '') + '</td>\
                     </tr>\
                 </table>';
-            layer.bindPopup(popupContent, {maxHeight: 400});
-            var popup = layer.getPopup();
-            var content = popup.getContent();
-            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
-            popup.setContent(updatedContent);
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
         }
 
         function style_EPCINord_2_0() {
@@ -155,7 +165,7 @@
                 fill: true,
                 fillOpacity: 1,
                 fillColor: 'rgba(196,60,57,0.0)',
-                interactive: false,
+                interactive: true,
             }
         }
         map.createPane('pane_EPCINord_2');
@@ -163,7 +173,7 @@
         map.getPane('pane_EPCINord_2').style['mix-blend-mode'] = 'normal';
         var layer_EPCINord_2 = new L.geoJson(json_EPCINord_2, {
             attribution: '',
-            interactive: false,
+            interactive: true,
             dataVar: 'json_EPCINord_2',
             layerName: 'layer_EPCINord_2',
             pane: 'pane_EPCINord_2',
@@ -181,14 +191,14 @@
                         <td class="visible-with-data" id="Population"colspan="2"><strong>Population</strong><br />' + (feature.properties['Population'] !== null ? autolinker.link(feature.properties['Population'].toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
-                        <td colspan="2">' + (feature.properties['Nombre_asso'] !== null ? autolinker.link(feature.properties['Nombre_asso'].toLocaleString()) : '') + '</td>\
+                        <td class="visible-with-data" id="Nombre_asso"colspan="2"><strong>Nombre_asso</strong><br />' + (feature.properties['Nombre_asso'] !== null ? autolinker.link(feature.properties['Nombre_asso'].toLocaleString()) : '') + '</td>\
                     </tr>\
                 </table>';
-            layer.bindPopup(popupContent, {maxHeight: 400});
-            var popup = layer.getPopup();
-            var content = popup.getContent();
-            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
-            popup.setContent(updatedContent);
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
         }
 
         function style_CommunesNord_3_0() {
@@ -247,11 +257,11 @@
                         <td class="visible-with-data" id="Niveau"colspan="2"><strong>Indice - isolement social</strong><br />' + (feature.properties['Niveau'] !== null ? autolinker.link(feature.properties['Niveau'].toLocaleString()) : '') + '</td>\
                     </tr>\
                 </table>';
-            layer.bindPopup(popupContent, {maxHeight: 400});
-            var popup = layer.getPopup();
-            var content = popup.getContent();
-            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
-            popup.setContent(updatedContent);
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
         }
 
         function style_Indiceisolementsocial_4_0(feature) {
@@ -343,11 +353,11 @@
                         <td class="visible-with-data" id="Médiane d"colspan="2"><strong>Médiane du niveau de vie (2020)</strong><br />' + (feature.properties['Médiane d'] !== null ? autolinker.link(feature.properties['Médiane d'].toLocaleString()) : '') + '</td>\
                     </tr>\
                 </table>';
-            layer.bindPopup(popupContent, {maxHeight: 400});
-            var popup = layer.getPopup();
-            var content = popup.getContent();
-            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
-            popup.setContent(updatedContent);
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
         }
 
         function style_Indicecontrainteconomique_5_0(feature) {
@@ -470,11 +480,11 @@
                         <td class="visible-with-data" id="jenks_cu_1"colspan="2"><strong>Indice de risque (départemental)</strong><br />' + (feature.properties['jenks_cu_1'] !== null ? autolinker.link(feature.properties['jenks_cu_1'].toLocaleString()) : '') + '</td>\
                     </tr>\
                 </table>';
-            layer.bindPopup(popupContent, {maxHeight: 400});
-            var popup = layer.getPopup();
-            var content = popup.getContent();
-            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
-            popup.setContent(updatedContent);
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
         }
 
         function style_Indicerisquedeprcaritalimentaire_6_0(feature) {
@@ -581,11 +591,11 @@
                         <td class="visible-with-data" id="Taux de pa"colspan="2"><strong>Taux de pauvreté (2020)</strong><br />' + (feature.properties['Taux de pa'] !== null ? autolinker.link(feature.properties['Taux de pa'].toLocaleString()) : '') + '</td>\
                     </tr>\
                 </table>';
-            layer.bindPopup(popupContent, {maxHeight: 400});
-            var popup = layer.getPopup();
-            var content = popup.getContent();
-            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
-            popup.setContent(updatedContent);
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
         }
 
         function style_Tauxdepauvret2020_7_0(feature) {
@@ -657,11 +667,11 @@
                         <td class="visible-with-data" id="Commune"colspan="2"><strong>Commune</strong><br />' + (feature.properties['Commune'] !== null ? autolinker.link(feature.properties['Commune'].toLocaleString()) : '') + '</td>\
                     </tr>\
                 </table>';
-            layer.bindPopup(popupContent, {maxHeight: 400});
-            var popup = layer.getPopup();
-            var content = popup.getContent();
-            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
-            popup.setContent(updatedContent);
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
         }
 
         function style_QPVNord_8_0() {
@@ -717,11 +727,11 @@
                         <td class="visible-with-data" id="Kg Brut"colspan="2"><strong>Kg Brut</strong><br />' + (feature.properties['Kg Brut'] !== null ? autolinker.link(feature.properties['Kg Brut'].toLocaleString()) : '') + '</td>\
                     </tr>\
                 </table>';
-            layer.bindPopup(popupContent, {maxHeight: 400});
-            var popup = layer.getPopup();
-            var content = popup.getContent();
-            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
-            popup.setContent(updatedContent);
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
         }
 
         function style_Tonnagedesassociationspartenaires_9_0(feature) {
@@ -809,57 +819,63 @@
             },
         });
         bounds_group.addLayer(layer_Tonnagedesassociationspartenaires_9);
-        function pop_RestosduCoeur_10(feature, layer) {
+        function pop_ESAndes_10(feature, layer) {
             var popupContent = '<table>\
                     <tr>\
-                        <td class="visible-with-data" id="Nom"colspan="2"><strong>Nom</strong><br />' + (feature.properties['Nom'] !== null ? autolinker.link(feature.properties['Nom'].toLocaleString()) : '') + '</td>\
+                        <td class="visible-with-data" id="address"colspan="2"><strong>Adresse</strong><br />' + (feature.properties['address'] !== null ? autolinker.link(feature.properties['address'].toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
-                        <td class="visible-with-data" id="Commune"colspan="2"><strong>Commune</strong><br />' + (feature.properties['Commune'] !== null ? autolinker.link(feature.properties['Commune'].toLocaleString()) : '') + '</td>\
+                        <td class="visible-with-data" id="store"colspan="2"><strong>Association</strong><br />' + (feature.properties['store'] !== null ? autolinker.link(feature.properties['store'].toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
-                        <td class="visible-with-data" id="Full Addre"colspan="2"><strong>Adresse</strong><br />' + (feature.properties['Full Addre'] !== null ? autolinker.link(feature.properties['Full Addre'].toLocaleString()) : '') + '</td>\
+                        <td class="visible-with-data" id="permalink"colspan="2"><strong>Lien</strong><br />' + (feature.properties['permalink'] !== null ? autolinker.link(feature.properties['permalink'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="city"colspan="2"><strong>Ville</strong><br />' + (feature.properties['city'] !== null ? autolinker.link(feature.properties['city'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="phone"colspan="2"><strong>Tel</strong><br />' + (feature.properties['phone'] !== null ? autolinker.link(feature.properties['phone'].toLocaleString()) : '') + '</td>\
                     </tr>\
                 </table>';
-            layer.bindPopup(popupContent, {maxHeight: 400});
-            var popup = layer.getPopup();
-            var content = popup.getContent();
-            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
-            popup.setContent(updatedContent);
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
         }
 
-        function style_RestosduCoeur_10_0() {
+        function style_ESAndes_10_0() {
             return {
-                pane: 'pane_RestosduCoeur_10',
+                pane: 'pane_ESAndes_10',
         rotationAngle: 0.0,
         rotationOrigin: 'center center',
         icon: L.icon({
-            iconUrl: 'markers/RestosduCoeur_10.svg',
+            iconUrl: 'markers/ESAndes_10.svg',
             iconSize: [19.0, 19.0]
         }),
                 interactive: true,
             }
         }
-        map.createPane('pane_RestosduCoeur_10');
-        map.getPane('pane_RestosduCoeur_10').style.zIndex = 410;
-        map.getPane('pane_RestosduCoeur_10').style['mix-blend-mode'] = 'normal';
-        var layer_RestosduCoeur_10 = new L.geoJson(json_RestosduCoeur_10, {
+        map.createPane('pane_ESAndes_10');
+        map.getPane('pane_ESAndes_10').style.zIndex = 410;
+        map.getPane('pane_ESAndes_10').style['mix-blend-mode'] = 'normal';
+        var layer_ESAndes_10 = new L.geoJson(json_ESAndes_10, {
             attribution: '',
             interactive: true,
-            dataVar: 'json_RestosduCoeur_10',
-            layerName: 'layer_RestosduCoeur_10',
-            pane: 'pane_RestosduCoeur_10',
-            onEachFeature: pop_RestosduCoeur_10,
+            dataVar: 'json_ESAndes_10',
+            layerName: 'layer_ESAndes_10',
+            pane: 'pane_ESAndes_10',
+            onEachFeature: pop_ESAndes_10,
             pointToLayer: function (feature, latlng) {
                 var context = {
                     feature: feature,
                     variables: {}
                 };
-                return L.marker(latlng, style_RestosduCoeur_10_0(feature));
+                return L.marker(latlng, style_ESAndes_10_0(feature));
             },
         });
-        bounds_group.addLayer(layer_RestosduCoeur_10);
-        map.addLayer(layer_RestosduCoeur_10);
+        bounds_group.addLayer(layer_ESAndes_10);
+        map.addLayer(layer_ESAndes_10);
         function pop_Autresassociationsaidealimentaire_11(feature, layer) {
             var popupContent = '<table>\
                     <tr>\
@@ -874,12 +890,15 @@
                     <tr>\
                         <td class="visible-with-data" id="Type"colspan="2"><strong>Type</strong><br />' + (feature.properties['Type'] !== null ? autolinker.link(feature.properties['Type'].toLocaleString()) : '') + '</td>\
                     </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Infos"colspan="2"><strong>Infos</strong><br />' + (feature.properties['Infos'] !== null ? autolinker.link(feature.properties['Infos'].toLocaleString()) : '') + '</td>\
+                    </tr>\
                 </table>';
-            layer.bindPopup(popupContent, {maxHeight: 400});
-            var popup = layer.getPopup();
-            var content = popup.getContent();
-            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
-            popup.setContent(updatedContent);
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
         }
 
         function style_Autresassociationsaidealimentaire_11_0(feature) {
@@ -991,7 +1010,185 @@
         });
         bounds_group.addLayer(layer_Autresassociationsaidealimentaire_11);
         map.addLayer(layer_Autresassociationsaidealimentaire_11);
-        function pop_Associationspartenaires_12(feature, layer) {
+        function pop_RestosduCoeur_12(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td class="visible-with-data" id="Nom"colspan="2"><strong>Nom</strong><br />' + (feature.properties['Nom'] !== null ? autolinker.link(feature.properties['Nom'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Commune"colspan="2"><strong>Commune</strong><br />' + (feature.properties['Commune'] !== null ? autolinker.link(feature.properties['Commune'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Full Addre"colspan="2"><strong>Adresse</strong><br />' + (feature.properties['Full Addre'] !== null ? autolinker.link(feature.properties['Full Addre'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_RestosduCoeur_12_0() {
+            return {
+                pane: 'pane_RestosduCoeur_12',
+        rotationAngle: 0.0,
+        rotationOrigin: 'center center',
+        icon: L.icon({
+            iconUrl: 'markers/RestosduCoeur_12.svg',
+            iconSize: [19.0, 19.0]
+        }),
+                interactive: true,
+            }
+        }
+        map.createPane('pane_RestosduCoeur_12');
+        map.getPane('pane_RestosduCoeur_12').style.zIndex = 412;
+        map.getPane('pane_RestosduCoeur_12').style['mix-blend-mode'] = 'normal';
+        var layer_RestosduCoeur_12 = new L.geoJson(json_RestosduCoeur_12, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_RestosduCoeur_12',
+            layerName: 'layer_RestosduCoeur_12',
+            pane: 'pane_RestosduCoeur_12',
+            onEachFeature: pop_RestosduCoeur_12,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.marker(latlng, style_RestosduCoeur_12_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_RestosduCoeur_12);
+        map.addLayer(layer_RestosduCoeur_12);
+        function pop_SecoursPopulaire_13(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td class="visible-with-data" id="Adresse"colspan="2"><strong>Adresse</strong><br />' + (feature.properties['Adresse'] !== null ? autolinker.link(feature.properties['Adresse'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Associatio"colspan="2"><strong>Association</strong><br />' + (feature.properties['Associatio'] !== null ? autolinker.link(feature.properties['Associatio'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Ville"colspan="2"><strong>Ville</strong><br />' + (feature.properties['Ville'] !== null ? autolinker.link(feature.properties['Ville'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CP'] !== null ? autolinker.link(feature.properties['CP'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Kg net"colspan="2"><strong>Kg net</strong><br />' + (feature.properties['Kg net'] !== null ? autolinker.link(feature.properties['Kg net'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Kg brut"colspan="2"><strong>Kg brut</strong><br />' + (feature.properties['Kg brut'] !== null ? autolinker.link(feature.properties['Kg brut'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Informatio"colspan="2"><strong>Informations</strong><br />' + (feature.properties['Informatio'] !== null ? autolinker.link(feature.properties['Informatio'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_SecoursPopulaire_13_0() {
+            return {
+                pane: 'pane_SecoursPopulaire_13',
+        rotationAngle: 0.0,
+        rotationOrigin: 'center center',
+        icon: L.icon({
+            iconUrl: 'markers/SecoursPopulaire_13.svg',
+            iconSize: [20.52, 20.52]
+        }),
+                interactive: true,
+            }
+        }
+        map.createPane('pane_SecoursPopulaire_13');
+        map.getPane('pane_SecoursPopulaire_13').style.zIndex = 413;
+        map.getPane('pane_SecoursPopulaire_13').style['mix-blend-mode'] = 'normal';
+        var layer_SecoursPopulaire_13 = new L.geoJson(json_SecoursPopulaire_13, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_SecoursPopulaire_13',
+            layerName: 'layer_SecoursPopulaire_13',
+            pane: 'pane_SecoursPopulaire_13',
+            onEachFeature: pop_SecoursPopulaire_13,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.marker(latlng, style_SecoursPopulaire_13_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_SecoursPopulaire_13);
+        map.addLayer(layer_SecoursPopulaire_13);
+        function pop_CroixRougeNord_14(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td class="visible-with-data" id="Zone"colspan="2"><strong>Zone</strong><br />' + (feature.properties['Zone'] !== null ? autolinker.link(feature.properties['Zone'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="UL"colspan="2"><strong>Unité Locale</strong><br />' + (feature.properties['UL'] !== null ? autolinker.link(feature.properties['UL'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Adresse"colspan="2"><strong>Adresse</strong><br />' + (feature.properties['Adresse'] !== null ? autolinker.link(feature.properties['Adresse'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Activité"colspan="2"><strong>Activité</strong><br />' + (feature.properties['Activité'] !== null ? autolinker.link(feature.properties['Activité'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Site"colspan="2"><strong>Site</strong><br />' + (feature.properties['Site'] !== null ? autolinker.link(feature.properties['Site'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Contact"colspan="2"><strong>Contact</strong><br />' + (feature.properties['Contact'] !== null ? autolinker.link(feature.properties['Contact'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_CroixRougeNord_14_0() {
+            return {
+                pane: 'pane_CroixRougeNord_14',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,52,0,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_CroixRougeNord_14');
+        map.getPane('pane_CroixRougeNord_14').style.zIndex = 414;
+        map.getPane('pane_CroixRougeNord_14').style['mix-blend-mode'] = 'normal';
+        var layer_CroixRougeNord_14 = new L.geoJson(json_CroixRougeNord_14, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_CroixRougeNord_14',
+            layerName: 'layer_CroixRougeNord_14',
+            pane: 'pane_CroixRougeNord_14',
+            onEachFeature: pop_CroixRougeNord_14,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.shapeMarker(latlng, style_CroixRougeNord_14_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_CroixRougeNord_14);
+        map.addLayer(layer_CroixRougeNord_14);
+        function pop_Associationspartenaires_15(feature, layer) {
             var popupContent = '<table>\
                     <tr>\
                         <td class="visible-with-data" id="associatio"colspan="2"><strong>Association</strong><br />' + (feature.properties['associatio'] !== null ? autolinker.link(feature.properties['associatio'].toLocaleString()) : '') + '</td>\
@@ -1015,16 +1212,16 @@
                         <td class="visible-with-data" id="Kg Brut"colspan="2"><strong>Kg Brut</strong><br />' + (feature.properties['Kg Brut'] !== null ? autolinker.link(feature.properties['Kg Brut'].toLocaleString()) : '') + '</td>\
                     </tr>\
                 </table>';
-            layer.bindPopup(popupContent, {maxHeight: 400});
-            var popup = layer.getPopup();
-            var content = popup.getContent();
-            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
-            popup.setContent(updatedContent);
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
         }
 
-        function style_Associationspartenaires_12_0() {
+        function style_Associationspartenaires_15_0() {
             return {
-                pane: 'pane_Associationspartenaires_12',
+                pane: 'pane_Associationspartenaires_15',
                 radius: 4.6,
                 opacity: 1,
                 color: 'rgba(6,4,1,1.0)',
@@ -1038,27 +1235,27 @@
                 interactive: true,
             }
         }
-        map.createPane('pane_Associationspartenaires_12');
-        map.getPane('pane_Associationspartenaires_12').style.zIndex = 412;
-        map.getPane('pane_Associationspartenaires_12').style['mix-blend-mode'] = 'normal';
-        var layer_Associationspartenaires_12 = new L.geoJson(json_Associationspartenaires_12, {
+        map.createPane('pane_Associationspartenaires_15');
+        map.getPane('pane_Associationspartenaires_15').style.zIndex = 415;
+        map.getPane('pane_Associationspartenaires_15').style['mix-blend-mode'] = 'normal';
+        var layer_Associationspartenaires_15 = new L.geoJson(json_Associationspartenaires_15, {
             attribution: '',
             interactive: true,
-            dataVar: 'json_Associationspartenaires_12',
-            layerName: 'layer_Associationspartenaires_12',
-            pane: 'pane_Associationspartenaires_12',
-            onEachFeature: pop_Associationspartenaires_12,
+            dataVar: 'json_Associationspartenaires_15',
+            layerName: 'layer_Associationspartenaires_15',
+            pane: 'pane_Associationspartenaires_15',
+            onEachFeature: pop_Associationspartenaires_15,
             pointToLayer: function (feature, latlng) {
                 var context = {
                     feature: feature,
                     variables: {}
                 };
-                return L.circleMarker(latlng, style_Associationspartenaires_12_0(feature));
+                return L.circleMarker(latlng, style_Associationspartenaires_15_0(feature));
             },
         });
-        bounds_group.addLayer(layer_Associationspartenaires_12);
-        map.addLayer(layer_Associationspartenaires_12);
-        function pop_Antennes_13(feature, layer) {
+        bounds_group.addLayer(layer_Associationspartenaires_15);
+        map.addLayer(layer_Associationspartenaires_15);
+        function pop_Antennes_16(feature, layer) {
             var popupContent = '<table>\
                     <tr>\
                         <td class="visible-with-data" id="Adresse"colspan="2"><strong>Adresse</strong><br />' + (feature.properties['Adresse'] !== null ? autolinker.link(feature.properties['Adresse'].toLocaleString()) : '') + '</td>\
@@ -1070,16 +1267,16 @@
                         <td class="visible-with-data" id="Mail"colspan="2"><strong>Mail</strong><br />' + (feature.properties['Mail'] !== null ? autolinker.link(feature.properties['Mail'].toLocaleString()) : '') + '</td>\
                     </tr>\
                 </table>';
-            layer.bindPopup(popupContent, {maxHeight: 400});
-            var popup = layer.getPopup();
-            var content = popup.getContent();
-            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
-            popup.setContent(updatedContent);
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
         }
 
-        function style_Antennes_13_0() {
+        function style_Antennes_16_0() {
             return {
-                pane: 'pane_Antennes_13',
+                pane: 'pane_Antennes_16',
                 shape: 'square',
                 radius: 6.0,
                 opacity: 1,
@@ -1094,27 +1291,27 @@
                 interactive: true,
             }
         }
-        map.createPane('pane_Antennes_13');
-        map.getPane('pane_Antennes_13').style.zIndex = 413;
-        map.getPane('pane_Antennes_13').style['mix-blend-mode'] = 'normal';
-        var layer_Antennes_13 = new L.geoJson(json_Antennes_13, {
+        map.createPane('pane_Antennes_16');
+        map.getPane('pane_Antennes_16').style.zIndex = 416;
+        map.getPane('pane_Antennes_16').style['mix-blend-mode'] = 'normal';
+        var layer_Antennes_16 = new L.geoJson(json_Antennes_16, {
             attribution: '',
             interactive: true,
-            dataVar: 'json_Antennes_13',
-            layerName: 'layer_Antennes_13',
-            pane: 'pane_Antennes_13',
-            onEachFeature: pop_Antennes_13,
+            dataVar: 'json_Antennes_16',
+            layerName: 'layer_Antennes_16',
+            pane: 'pane_Antennes_16',
+            onEachFeature: pop_Antennes_16,
             pointToLayer: function (feature, latlng) {
                 var context = {
                     feature: feature,
                     variables: {}
                 };
-                return L.shapeMarker(latlng, style_Antennes_13_0(feature));
+                return L.shapeMarker(latlng, style_Antennes_16_0(feature));
             },
         });
-        bounds_group.addLayer(layer_Antennes_13);
-        map.addLayer(layer_Antennes_13);
-        function pop_BanquesAlimentaires_14(feature, layer) {
+        bounds_group.addLayer(layer_Antennes_16);
+        map.addLayer(layer_Antennes_16);
+        function pop_BanquesAlimentaires_17(feature, layer) {
             var popupContent = '<table>\
                     <tr>\
                         <td class="visible-with-data" id="BANQUES AL"colspan="2"><strong>Banque Alimentaire</strong><br />' + (feature.properties['BANQUES AL'] !== null ? autolinker.link(feature.properties['BANQUES AL'].toLocaleString()) : '') + '</td>\
@@ -1138,62 +1335,55 @@
                         <td class="visible-with-data" id="Tél"colspan="2"><strong>Tél</strong><br />' + (feature.properties['Tél'] !== null ? autolinker.link(feature.properties['Tél'].toLocaleString()) : '') + '</td>\
                     </tr>\
                 </table>';
-            layer.bindPopup(popupContent, {maxHeight: 400});
-            var popup = layer.getPopup();
-            var content = popup.getContent();
-            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
-            popup.setContent(updatedContent);
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
         }
 
-        function style_BanquesAlimentaires_14_0() {
+        function style_BanquesAlimentaires_17_0() {
             return {
-                pane: 'pane_BanquesAlimentaires_14',
+                pane: 'pane_BanquesAlimentaires_17',
         rotationAngle: 0.0,
         rotationOrigin: 'center center',
         icon: L.icon({
-            iconUrl: 'markers/BanquesAlimentaires_14.svg',
+            iconUrl: 'markers/BanquesAlimentaires_17.svg',
             iconSize: [26.599999999999998, 26.599999999999998]
         }),
                 interactive: true,
             }
         }
-        map.createPane('pane_BanquesAlimentaires_14');
-        map.getPane('pane_BanquesAlimentaires_14').style.zIndex = 414;
-        map.getPane('pane_BanquesAlimentaires_14').style['mix-blend-mode'] = 'normal';
-        var layer_BanquesAlimentaires_14 = new L.geoJson(json_BanquesAlimentaires_14, {
+        map.createPane('pane_BanquesAlimentaires_17');
+        map.getPane('pane_BanquesAlimentaires_17').style.zIndex = 417;
+        map.getPane('pane_BanquesAlimentaires_17').style['mix-blend-mode'] = 'normal';
+        var layer_BanquesAlimentaires_17 = new L.geoJson(json_BanquesAlimentaires_17, {
             attribution: '',
             interactive: true,
-            dataVar: 'json_BanquesAlimentaires_14',
-            layerName: 'layer_BanquesAlimentaires_14',
-            pane: 'pane_BanquesAlimentaires_14',
-            onEachFeature: pop_BanquesAlimentaires_14,
+            dataVar: 'json_BanquesAlimentaires_17',
+            layerName: 'layer_BanquesAlimentaires_17',
+            pane: 'pane_BanquesAlimentaires_17',
+            onEachFeature: pop_BanquesAlimentaires_17,
             pointToLayer: function (feature, latlng) {
                 var context = {
                     feature: feature,
                     variables: {}
                 };
-                return L.marker(latlng, style_BanquesAlimentaires_14_0(feature));
+                return L.marker(latlng, style_BanquesAlimentaires_17_0(feature));
             },
         });
-        bounds_group.addLayer(layer_BanquesAlimentaires_14);
-        map.addLayer(layer_BanquesAlimentaires_14);
-            var title = new L.Control();
-            title.onAdd = function (map) {
-                this._div = L.DomUtil.create('div', 'info');
-                this.update();
-                return this._div;
-            };
-            title.update = function () {
-                this._div.innerHTML = '<h2>Paysage de l\'aide alimentaire - Nord (59)</h2>';
-            };
-            title.addTo(map);
+        bounds_group.addLayer(layer_BanquesAlimentaires_17);
+        map.addLayer(layer_BanquesAlimentaires_17);
         var baseMaps = {};
         var overlaysTree = [
-            {label: '<img src="legend/BanquesAlimentaires_14.png" /> Banques Alimentaires ', layer: layer_BanquesAlimentaires_14},
-            {label: '<img src="legend/Antennes_13.png" /> Antennes', layer: layer_Antennes_13},
-            {label: '<img src="legend/Associationspartenaires_12.png" /> Associations partenaires ', layer: layer_Associationspartenaires_12},
+            {label: '<img src="legend/BanquesAlimentaires_17.png" /> Banques Alimentaires ', layer: layer_BanquesAlimentaires_17},
+            {label: '<img src="legend/Antennes_16.png" /> Antennes', layer: layer_Antennes_16},
+            {label: '<img src="legend/Associationspartenaires_15.png" /> Associations partenaires ', layer: layer_Associationspartenaires_15},
+            {label: '<img src="legend/CroixRougeNord_14.png" /> Croix Rouge Nord', layer: layer_CroixRougeNord_14},
+            {label: '<img src="legend/SecoursPopulaire_13.png" /> Secours Populaire', layer: layer_SecoursPopulaire_13},
+            {label: '<img src="legend/RestosduCoeur_12.png" /> Restos du Coeur', layer: layer_RestosduCoeur_12},
             {label: 'Autres associations - aide alimentaire <br /><table><tr><td style="text-align: center;"><img src="legend/Autresassociationsaidealimentaire_11_Epiceriesociale0.png" /></td><td>Epicerie sociale</td></tr><tr><td style="text-align: center;"><img src="legend/Autresassociationsaidealimentaire_11_Restaurationassise1.png" /></td><td>Restauration assise</td></tr><tr><td style="text-align: center;"><img src="legend/Autresassociationsaidealimentaire_11_Distributionderepas2.png" /></td><td>Distribution de repas</td></tr><tr><td style="text-align: center;"><img src="legend/Autresassociationsaidealimentaire_11_Colisbébé3.png" /></td><td>Colis bébé</td></tr><tr><td style="text-align: center;"><img src="legend/Autresassociationsaidealimentaire_11_BonChèquealimentaire4.png" /></td><td>Bon/Chèque alimentaire</td></tr></table>', layer: layer_Autresassociationsaidealimentaire_11},
-            {label: '<img src="legend/RestosduCoeur_10.png" /> Restos du Coeur', layer: layer_RestosduCoeur_10},
+            {label: '<img src="legend/ESAndes_10.png" /> ES Andes', layer: layer_ESAndes_10},
             {label: 'Tonnage des associations partenaires <br /><table><tr><td style="text-align: center;"><img src="legend/Tonnagedesassociationspartenaires_9_0251000.png" /></td><td>0 - 25100</td></tr><tr><td style="text-align: center;"><img src="legend/Tonnagedesassociationspartenaires_9_25100632001.png" /></td><td>25100 - 63200</td></tr><tr><td style="text-align: center;"><img src="legend/Tonnagedesassociationspartenaires_9_631972069832.png" /></td><td>63197 - 206983</td></tr><tr><td style="text-align: center;"><img src="legend/Tonnagedesassociationspartenaires_9_2069836274043.png" /></td><td>206983 - 627404</td></tr></table>', layer: layer_Tonnagedesassociationspartenaires_9},
             {label: '<img src="legend/QPVNord_8.png" /> QPV Nord', layer: layer_QPVNord_8},
             {label: 'Taux de pauvreté (2020)<br /><table><tr><td style="text-align: center;"><img src="legend/Tauxdepauvret2020_7_7100.png" /></td><td>7 - 10</td></tr><tr><td style="text-align: center;"><img src="legend/Tauxdepauvret2020_7_10201.png" /></td><td>10 - 20</td></tr><tr><td style="text-align: center;"><img src="legend/Tauxdepauvret2020_7_202752.png" /></td><td>20 - 27,5</td></tr></table>', layer: layer_Tauxdepauvret2020_7},
@@ -1215,22 +1405,15 @@
         });
         lay.addTo(map);
         setBounds();
-        map.addControl(new L.Control.Search({
-            layer: layer_Associationspartenaires_12,
-            initial: false,
-            hideMarkerOnCollapse: true,
-            propertyName: 'associatio'}));
-        document.getElementsByClassName('search-button')[0].className +=
-         ' fa fa-binoculars';
-        resetLabels([layer_BanquesAlimentaires_14]);
+        resetLabels([layer_BanquesAlimentaires_17]);
         map.on("zoomend", function(){
-            resetLabels([layer_BanquesAlimentaires_14]);
+            resetLabels([layer_BanquesAlimentaires_17]);
         });
         map.on("layeradd", function(){
-            resetLabels([layer_BanquesAlimentaires_14]);
+            resetLabels([layer_BanquesAlimentaires_17]);
         });
         map.on("layerremove", function(){
-            resetLabels([layer_BanquesAlimentaires_14]);
+            resetLabels([layer_BanquesAlimentaires_17]);
         });
         </script>
     </body>
